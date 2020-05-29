@@ -24,11 +24,11 @@ void setup()
   Wire.begin();
   Wire.setClock(400000); // use 400 kHz I2C
 
-  for(int i=0;i<3;i++) {
+  for(int i=0; i<3; i++) {
     pinMode(XSHUT[i], OUTPUT);
   }
 
-  for(int i=0;i<3;i++) {
+  for(int i=0; i<3; i++) {
     
     sensor[i].setTimeout(500);
   
@@ -62,14 +62,14 @@ void setup()
 
 void loop()
 {
-  // Read sensor
-  for(int i=0;i<3;i++) {
+  // Read sensors
+  for(int i=0; i<3; i++) {
     
-    sensor[i].read();
-  
+    sensor[i].read();  
     range[i] = sensor[i].ranging_data.range_mm;
     range_status[i] = sensor[i].ranging_data.range_status; // 0: valid measurement
-   
+
+    // Person detection
     if(range[i] >= MIN_DIST[i] && range[i] <= MAX_DIST[i] && range_status[i] == 0)
       detect[i] = true;
     else
@@ -111,16 +111,22 @@ void moveServo(int posInit, int posDes) {
   }
 }
 
-//    Serial.print("This is sensor ");
-//    Serial.println(i+1);
-//    Serial.print(sensor[i].getAddress());
-//    Serial.print("\trange: ");
-//    Serial.print(range[i]);
-//    Serial.print("\tstatus: ");
-//    Serial.print(VL53L1X::rangeStatusToString(sensor[i].ranging_data.range_status));
-//    Serial.print(range_status[i]); // 0: In ordnung
-//    Serial.print("\tpeak signal: ");
-//    Serial.print(sensor[i].ranging_data.peak_signal_count_rate_MCPS);
-//    Serial.print("\tambient: ");
-//    Serial.print(sensor[i].ranging_data.ambient_count_rate_MCPS);
-//    Serial.println();
+/***************************************************************************************
+**                          Print sensor status
+***************************************************************************************/
+void sensorStatus(byte i) {
+  
+    Serial.print("This is sensor ");
+    Serial.println(i+1);
+    Serial.print(sensor[i].getAddress());
+    Serial.print("\trange: ");
+    Serial.print(range[i]);
+    Serial.print("\tstatus: ");
+    Serial.print(VL53L1X::rangeStatusToString(sensor[i].ranging_data.range_status));
+    Serial.print(range_status[i]); // 0: In ordnung
+    Serial.print("\tpeak signal: ");
+    Serial.print(sensor[i].ranging_data.peak_signal_count_rate_MCPS);
+    Serial.print("\tambient: ");
+    Serial.print(sensor[i].ranging_data.ambient_count_rate_MCPS);
+    Serial.println();
+}
