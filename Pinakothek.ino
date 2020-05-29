@@ -89,23 +89,35 @@ void loop()
   }
 
   // Restart time if person was detected
-  if(detect[0] || detect[1] || detect[2])
+  if(detect[0] || detect[1] || detect[2]) {
     resetTimer();
+    Serial.println("One or more persons detected");
+  }
 
   // Set desired position if only one sensor is active or timer 
-  if(detect[0] && !detect[1] && !detect[2])
-    servoDesiredPos = servoPositions[0];   
-  else if(!detect[0] && detect[1] && !detect[2])
+  if(detect[0] && !detect[1] && !detect[2]) {
+    servoDesiredPos = servoPositions[0];
+    Serial.println("Only one person on the left");
+  }    
+  else if(!detect[0] && detect[1] && !detect[2]) {    
     servoDesiredPos = servoPositions[1];         
-  else if(!detect[0] && !detect[1] && detect[2])
+    Serial.println("Only one person in the front");
+  }    
+  else if(!detect[0] && !detect[1] && detect[2]) {
     servoDesiredPos = servoPositions[2];
-  else if(timer())
+    Serial.println("Only one person on the right");
+  }    
+  else if(timer()) {
     servoDesiredPos = servoPositions[1]; // Move to middle position if certain time has elapsed
+    Serial.println("Timer elapsed, no person detected");
+  }
 
   // Move servo if desired position changes
   if(servoCurrentPos != servoDesiredPos) {
+      Serial.print("Servo moves to position ");
+      Serial.println(servoDesiredPos);
       moveServo(servoCurrentPos, servoDesiredPos);    
-      servoCurrentPos = servoDesiredPos;
+      servoCurrentPos = servoDesiredPos;      
   }    
 }
 
