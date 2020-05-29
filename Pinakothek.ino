@@ -2,6 +2,7 @@
 #include <VL53L1X.h>
 #include <Servo.h>
 
+// Init Lidar
 VL53L1X sensor[4];
 int sensor_address[4] = {40, 45, 50, 55};
 int XSHUT[4] = {9,10,11,12};
@@ -11,6 +12,7 @@ int range[4];
 int range_status[4];
 bool detect[4] = {false, false, false, false};
 
+// Init Servo
 Servo servo;
 const byte SERVO_DELAY = 30;
 int servoCurrentPos = 0;
@@ -18,12 +20,19 @@ int servoDesiredPos = 0;
 int servoPin = 7;
 int servoPositions[3] = {0, 90, 180}; 
 
+// Init Timer
+unsigned long startMillis;
+unsigned long currentMillis;
+const unsigned long period = 5 * 60 * 1000;
+
 void setup()
 {
   Serial.begin(115200);
   Wire.begin();
   Wire.setClock(400000); // use 400 kHz I2C
 
+  startMillis = millis();
+  
   for(int i=0; i<3; i++) {
     pinMode(XSHUT[i], OUTPUT);
   }
@@ -62,6 +71,9 @@ void setup()
 
 void loop()
 {
+
+  currentMillis = millis(); // Get the current "time" (actually the number of milliseconds since the program started)
+  
   // Read sensors
   for(int i=0; i<3; i++) {
     
@@ -71,24 +83,30 @@ void loop()
 
     // Person detection
     if(range[i] >= MIN_DIST[i] && range[i] <= MAX_DIST[i] && range_status[i] == 0)
-      detect[i] = true;
+      detect[i] = true;    
     else
       detect[i] = false;
   }
 
-  // Set desired position if only one sensor is active
+  // Restart time if person was detected
+  if(detect[0] || detect[1] || detect[2])
+    resetTimer();
+
+  // Set desired position if only one sensor is active or timer 
   if(detect[0] && !detect[1] && !detect[2])
     servoDesiredPos = servoPositions[0];   
   else if(!detect[0] && detect[1] && !detect[2])
     servoDesiredPos = servoPositions[1];         
   else if(!detect[0] && !detect[1] && detect[2])
     servoDesiredPos = servoPositions[2];
+  else if(timer())
+    servoDesiredPos = servoPositions[1]; // Move to middle position if certain time has elapsed
 
   // Move servo if desired position changes
   if(servoCurrentPos != servoDesiredPos) {
       moveServo(servoCurrentPos, servoDesiredPos);    
       servoCurrentPos = servoDesiredPos;
-  }
+  }    
 }
 
 /***************************************************************************************
@@ -109,6 +127,26 @@ void moveServo(int posInit, int posDes) {
       delay(SERVO_DELAY);
     }
   }
+}
+
+/***************************************************************************************
+**                             Timer
+***************************************************************************************/
+bool timer() {
+  if (currentMillis - startMillis >= period)  // Check whether the period has elapsed
+  {
+    resetTimer();
+    return true;
+  }
+  else
+    return false;
+}
+
+/***************************************************************************************
+**                          Restart timer
+***************************************************************************************/
+void resetTimer() {
+  startMillis = currentMillis;
 }
 
 /***************************************************************************************
