@@ -15,15 +15,15 @@ bool detect[4] = {false, false, false, false};
 // Init Servo
 Servo servo;
 const byte SERVO_DELAY = 30;
-int servoCurrentPos = 0;
-int servoDesiredPos = 0;
+int servoCurrentPos = 90;
+int servoDesiredPos = 90;
 int servoPin = 7;
-int servoPositions[3] = {0, 90, 180}; 
+int servoPositions[3] = {20, 90, 160}; 
 
 // Init Timer
 unsigned long startMillis;
 unsigned long currentMillis;
-const unsigned long period = 5 * 60 * 1000;
+unsigned long period = 100000; // ms
 
 void setup()
 {
@@ -118,7 +118,7 @@ void loop()
       Serial.println(servoDesiredPos);
       moveServo(servoCurrentPos, servoDesiredPos);    
       servoCurrentPos = servoDesiredPos;      
-  }    
+  }  
 }
 
 /***************************************************************************************
